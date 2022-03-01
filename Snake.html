@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<script src="jquery-3.4.1.min.js"></script>
+<style>
+#field td{
+	width: 50px;
+	height: 50px;
+	border: 1px solid black;
+	text-align: center;
+}
+.fieldArea{
+	display: flex;
+	justify-content: center;
+}
+</style>
+<script>
+var direction = "up";
+var size = 7;
+var snakeLength;
+var x = new Array();
+var y = new Array();
+var xF, yF;
+var flagWin;
+var interval;
+$(document).ready(function(){
+	$("#difficulty").prop("disabled", false);
+	$("#btnStart").prop("disabled", false);
+	$(document).keydown(function(e){
+		if((e.which == 87 || e.which == 38) && direction != "down") direction = "up";
+		else if((e.which == 83 || e.which == 40) && direction != "up") direction = "down";
+		else if((e.which == 68 || e.which == 39) && direction != "left") direction = "right";
+		else if((e.which == 65 || e.which == 37) && direction != "right") direction = "left";
+	});
+	generateTable();
+	initialize();
+});
+function startGame(){
+	flagWin = false;
+
+	if($("#difficulty").val() == "-") {
+		alert('Please choose difficulty')
+		return
+	}
+
+	if($("#difficulty").val() == "easy") interval = 1000;
+	else if($("#difficulty").val() == "normal") interval = 800;
+	else if($("#difficulty").val() == "hard") interval = 600;
+	else if($("#difficulty").val() == "insane") interval = 300;
+	$("#difficulty").prop("disabled", true);
+	$("#btnStart").prop("disabled", true);
+	document.activeElement.blur();
+	move();
+}
+function move(){
+	setTimeout(function(){
+		if(direction == "up"){
+			$("#" + x[snakeLength-1] + y[snakeLength-1]).html("");
+			for(var i = snakeLength - 1; i > 0; i--){
+				x[i] = x[i-1];
+				y[i] = y[i-1];
+				$("#" + x[i] + y[i]).html("*");
+			}
+			x[0]--;;
+			$("#" + x[0] + y[0]).html("O");
+			if(x[0] == xF && y[0] == yF) foodEaten();
+			if(x[0] >= 0 && checkMove() == true && flagWin == false) move();
+			else if(flagWin == true) alert("Win!");
+			else alert("Died");
+		}
+		else if(direction == "down"){
+			$("#" + x[snakeLength-1] + y[snakeLength-1]).html("");
+			for(var i = snakeLength - 1; i > 0; i--){
+				x[i] = x[i-1];
+				y[i] = y[i-1];
+				$("#" + x[i] + y[i]).html("*");
+			}
+			x[0]++;
+			$("#" + x[0] + y[0]).html("O");
+			if(x[0] == xF && y[0] == yF) foodEaten();
+			if(x[0] < size && checkMove() == true && flagWin == false) move();
+			else if(flagWin == true) alert("Win!");
+			else alert("Died");
+		}
+		else if(direction == "right"){
+			$("#" + x[snakeLength-1] + y[snakeLength-1]).html("");
+			for(var i = snakeLength - 1; i > 0; i--){
+				x[i] = x[i-1];
+				y[i] = y[i-1];
+				$("#" + x[i] + y[i]).html("*");
+			}
+			y[0]++;
+			$("#" + x[0] + y[0]).html("O");
+			if(x[0] == xF && y[0] == yF) foodEaten();
+			if(y[0] < size && checkMove() == true && flagWin == false) move();
+			else if(flagWin == true) alert("Win!");
+			else alert("Died");
+		}
+		else if(direction == "left"){
+			$("#" + x[snakeLength-1] + y[snakeLength-1]).html("");
+			for(var i = snakeLength - 1; i > 0; i--){
+				x[i] = x[i-1];
+				y[i] = y[i-1];
+				$("#" + x[i] + y[i]).html("*");
+			}
+			y[0]--;
+			$("#" + x[0] + y[0]).html("O");
+			if(x[0] == xF && y[0] == yF) foodEaten();
+			if(y[0] >= 0 && checkMove() == true && flagWin == false) move();
+			else if(flagWin == true) alert("Win!");
+			else alert("Died");
+		}
+	}, interval);
+}
+function initialize(){
+	var koor = Math.floor(size / 2);
+	x[0] = koor; y[0] = koor;
+	snakeLength = 1;
+	$("#" + koor + koor).html("O");
+	generateFood();
+}
+function generateFood(){
+	xF = Math.floor(Math.random() * size);
+	yF = Math.floor(Math.random() * size);
+	var flag = false;
+	while(flag == false){
+		flag = true;
+		xF = Math.floor(Math.random() * size);
+		yF = Math.floor(Math.random() * size);
+		for(var i = 0; i < snakeLength; i++){
+			if(xF == x[i] && yF == y[i]) {
+				flag = false;
+				break;
+			}
+		}
+	}
+	$("#" + xF + yF).html("FOOD");
+}
+function foodEaten(){
+	generateFood();
+	snakeLength++;
+	if(snakeLength == (size * size)) flagWin = true;
+	$("#scoreboard").html("<h4>Score: " + (snakeLength - 1) + "</h4>");
+}
+function checkMove(){
+	for(var i = 1; i < snakeLength; i++){
+		if(x[0] == x[i] && y[0] == y[i]) return false;
+	}
+	return true;
+}
+function generateTable(){
+	var script = "";
+	for(var i = 0; i < size; i++){
+		script += generateRow(i);
+	}
+	$("#field").html(script);
+}
+function generateRow(x){
+	var row = "<tr>";
+	for(var i = 0; i < size; i++){
+		row += "<td id='" + x + i + "'></td>";
+	}
+	row += "</tr>";
+	return row;
+}
+function changeDirection(){
+	direction = "down";
+}
+</script>
+<body>
+<div class="fieldArea">
+	<div id="scoreboard"><h4>Score: 0</h4></div>
+</div>
+<div class="fieldArea">
+	<h4>Difficulty :</h4>
+	<select id="difficulty">
+		<option value="-">-----</option>
+		<option value="easy">Easy</option>
+		<option value="normal">Normal</option>
+		<option value="hard">Hard</option>
+		<option value="insane">Insane</option>
+	</select>
+	<button id="btnStart" onClick="startGame()">Start Game</button>
+</div>
+<div class="fieldArea">
+	<table id="field">
+	</table>
+</div>
+</body>
+</html>
